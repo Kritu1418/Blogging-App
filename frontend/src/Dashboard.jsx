@@ -4,8 +4,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// 🔥 Backend base URL (Render)
+const API = "https://blogging-app-d14y.onrender.com";
 
-// Naye, behtar graphics ke liye inline styles
+// UI styles
 const styles = {
   dashboard: {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -76,7 +78,7 @@ const styles = {
     borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    transition: 'transform 0.3s ease',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -122,20 +124,22 @@ const styles = {
   }
 };
 
-// SVG Icons
+// Icons
 const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00aaff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 const DeleteIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
-
 
 const Dashboard = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // 🔥 Fetch blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/blog/all', { withCredentials: true });
+        const response = await axios.get(`${API}/blog/all`, {
+          withCredentials: true
+        });
         setBlogs(response.data);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
@@ -147,11 +151,13 @@ const Dashboard = () => {
     fetchBlogs();
   }, []);
 
+  // 🔥 Delete blog
   const handleDelete = async (blogId) => {
-    // Optional: Add a custom confirmation modal here
     try {
-      // NOTE: Aapko backend mein /blog/:id jaisa ek DELETE route banana padega
-      await axios.delete(`http://localhost:5000/blog/${blogId}`, { withCredentials: true });
+      await axios.delete(`${API}/blog/${blogId}`, {
+        withCredentials: true
+      });
+
       setBlogs(blogs.filter(blog => blog._id !== blogId));
       toast.success("Blog post deleted successfully!");
     } catch (error) {
@@ -161,13 +167,13 @@ const Dashboard = () => {
   };
 
   const handleLogout = () => {
-    console.log("Logout clicked");
     navigate('/login');
   };
 
   return (
     <div style={styles.dashboard}>
       <ToastContainer position="bottom-right" autoClose={3000} theme="dark" />
+
       <nav style={styles.navbar}>
         <Link to="/homeblog" style={styles.navBrand}>Its Blogs</Link>
         <div style={styles.navLinks}>
@@ -185,37 +191,45 @@ const Dashboard = () => {
           <h1>Your Dashboard</h1>
           <p>Manage your creative space.</p>
         </header>
-        
+
         {loading ? (
           <p style={{textAlign: 'center', fontSize: '1.2rem'}}>Loading your masterpieces...</p>
         ) : blogs.length > 0 ? (
           <div style={styles.blogGrid}>
             {blogs.map(blog => (
-              <div key={blog._id} style={styles.blogCard} 
-                   onMouseOver={e => e.currentTarget.style.transform = 'translateY(-5px)'}
-                   onMouseOut={e => e.currentTarget.style.transform = 'none'}>
+              <div key={blog._id} style={styles.blogCard}>
                 <div style={styles.cardContent}>
-                  <h3 style={styles.cardTitle}>{blog.title || "Untitled Post"}</h3>
-                  <p style={styles.cardSummary}>{blog.summary || "No summary available."}</p>
+                  <h3 style={styles.cardTitle}>{blog.title}</h3>
+                  <p style={styles.cardSummary}>{blog.summary}</p>
                 </div>
+
                 <div style={styles.cardFooter}>
-                  <small style={styles.cardAuthor}>By {blog.author || "Unknown"}</small>
+                  <small style={styles.cardAuthor}>By {blog.author?.email || "Unknown"}</small>
+
                   <div style={styles.cardActions}>
-                    <button style={styles.actionButton} onClick={() => navigate(`/edit-blog/${blog._id}`)}>
+                    <button
+                      style={styles.actionButton}
+                      onClick={() => navigate(`/edit-blog/${blog._id}`)}
+                    >
                       <EditIcon />
                     </button>
-                    <button style={styles.actionButton} onClick={() => handleDelete(blog._id)}>
+
+                    <button
+                      style={styles.actionButton}
+                      onClick={() => handleDelete(blog._id)}
+                    >
                       <DeleteIcon />
                     </button>
                   </div>
                 </div>
+
               </div>
             ))}
           </div>
         ) : (
           <div style={styles.noBlogs}>
             <h2>Your canvas is empty!</h2>
-            <p>Ready to share your thoughts? Click 'Create Post' to get started.</p>
+            <p>Click ‘Create Post’ to write your first blog.</p>
           </div>
         )}
       </div>
@@ -224,4 +238,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
