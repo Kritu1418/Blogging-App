@@ -6,6 +6,8 @@ import "./auth.css";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const API = "https://blogging-app-d14y.onrender.com"; // 🔥 Backend URL
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,30 +20,23 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/auth/register", {
+      const response = await axios.post(`${API}/auth/register`, {
         email,
         password,
         confirmedPassword,
       });
 
-      // ## CHANGE YAHAN HAI: Ab hum message ki jagah status code check kar rahe hain ##
-      if (response.status === 201) { // 201 ka matlab hai "Created"
-        
-        // Backend se aaya hua message hi toast mein dikhao
-        toast.success(response.data.message); 
-        
-        // Form ko clear karo
+      if (response.status === 201) {
+        toast.success(response.data.message);
+
         setEmail("");
         setPassword("");
         setConfirmedPassword("");
 
-        // 3 second baad login page par bhej do
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
+        setTimeout(() => navigate("/login"), 3000);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Use a strong password or a different email");
+      toast.error(error.response?.data?.message || "Use a strong password or different email");
     } finally {
       setLoading(false);
     }
@@ -50,26 +45,16 @@ const Signup = () => {
   return (
     <>
       <div className="home">
-        <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-          transition={Bounce}
-        />
+        <ToastContainer position="top-center" autoClose={3000} transition={Bounce} theme="colored" />
+
         <div className="container">
           <form>
             <img src="./signup.svg" alt="Signup Illustration" />
           </form>
+
           <form className="myform" onSubmit={handleSubmit}>
-            <h3>
-              Hi <em>👋</em>, Welcome!
-            </h3>
+            <h3>Hi <em>👋</em>, Welcome!</h3>
+
             <div>
               <input
                 type="email"
@@ -78,6 +63,7 @@ const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
               <div className="mydiv">
                 <input
                   type="password"
@@ -87,6 +73,7 @@ const Signup = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
               <div className="mydiv">
                 <input
                   type="password"
@@ -96,17 +83,21 @@ const Signup = () => {
                   onChange={(e) => setConfirmedPassword(e.target.value)}
                 />
               </div>
+
               <div className="second-div">
                 <button type="submit" disabled={loading}>
                   {loading ? "Loading..." : "Submit"}
                 </button>
+
                 <p>
                   Already have an account? <Link to="/login">Login</Link>
                 </p>
               </div>
+
             </div>
           </form>
         </div>
+
       </div>
     </>
   );
