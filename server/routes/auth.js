@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import Usermodel from "../model/user.js";
+import Usermodel from "../model/user.js"; // ✅ CORRECT
 
 import { body, validationResult } from "express-validator";
 import verifyToken from "../middleware/authMiddleware.js";
@@ -20,7 +20,6 @@ router.post(
       .withMessage("Passwords do not match"),
   ],
   async (req, res) => {
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -59,7 +58,6 @@ router.post(
       });
 
       res.status(201).json({ message: "User Created, Verify Email Now" });
-
     } catch (error) {
       console.error("Error in /register route:", error);
       res.status(500).json({ message: "Internal Server Error" });
@@ -73,7 +71,6 @@ router.post("/forgot", async (req, res) => {
 
   try {
     const user = await Usermodel.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ message: "Email Not Found" });
     }
@@ -99,7 +96,6 @@ router.post("/forgot", async (req, res) => {
     });
 
     res.status(200).json({ message: "Reset Link Sent" });
-
   } catch (error) {
     console.error("Error in /forgot route:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -119,7 +115,6 @@ router.get("/verify/:token", async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "Verified", redirect: "/login" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -127,7 +122,6 @@ router.get("/verify/:token", async (req, res) => {
 
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
-
   const { email, password } = req.body;
 
   try {
@@ -135,7 +129,9 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(404).json({ message: "Email Not Found" });
 
     if (!user.isVerified) {
-      return res.status(400).json({ message: "Email Not Verified" });
+      return res
+        .status(400)
+        .json({ message: "Email Not Verified" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -150,7 +146,6 @@ router.post("/login", async (req, res) => {
 
     res.cookie("token", token, { httpOnly: true });
     res.status(200).json({ message: "Login Successful", redirect: "/home" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -158,7 +153,6 @@ router.post("/login", async (req, res) => {
 
 // ================= RESET PASSWORD =================
 router.post("/reset/:token", async (req, res) => {
-
   const { token } = req.params;
   const { password } = req.body;
 
@@ -174,7 +168,6 @@ router.post("/reset/:token", async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "Password Updated", redirect: "/login" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
