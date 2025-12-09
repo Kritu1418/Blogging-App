@@ -4,7 +4,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Sundar design ke liye inline styles
+// Backend Base URL (Render)
+const API = "https://blogging-app-d14y.onrender.com";
+
 const styles = {
   page: {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -77,7 +79,7 @@ const styles = {
     transition: 'all 0.3s ease',
     backgroundColor: '#00aaff',
     color: '#1a1a1a',
-    alignSelf: 'flex-start', // Button ko left mein rakhega
+    alignSelf: 'flex-start',
   }
 };
 
@@ -85,9 +87,10 @@ const Create = () => {
   const [formData, setFormData] = useState({
     title: '',
     summary: '',
-    image: '', // Image URL ke liye
+    image: '',
     content: ''
   });
+
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -100,21 +103,19 @@ const Create = () => {
     setLoading(true);
 
     try {
-      // Backend ke /blog/create route par data bhej rahe hain
-      const response = await axios.post('http://localhost:5000/blog/create', formData, {
-        withCredentials: true // Ye login token bhejne ke liye zaroori hai
-      });
+      const response = await axios.post(
+        `${API}/blog/create`,
+        formData,
+        { withCredentials: true }
+      );
 
       if (response.status === 201) {
         toast.success("Blog published successfully! ✨");
-        // 2 second baad dashboard par wapas bhej do
-        setTimeout(() => {
-          navigate('/homeblog');
-        }, 2000);
+        setTimeout(() => navigate('/homeblog'), 2000);
       }
+
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Something went wrong!";
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -123,19 +124,25 @@ const Create = () => {
   return (
     <div style={styles.page}>
       <ToastContainer position="bottom-right" autoClose={3000} theme="dark" />
+
       <div style={styles.container}>
         <header style={styles.header}>
           <h1 style={styles.title}>Create Your Masterpiece</h1>
-          <Link to="/homeblog" style={styles.backLink} onMouseOver={e => e.target.style.color = '#fff'} onMouseOut={e => e.target.style.color = '#888'}>
+          <Link 
+            to="/homeblog" 
+            style={styles.backLink}
+            onMouseOver={e => e.target.style.color = '#fff'}
+            onMouseOut={e => e.target.style.color = '#888'}
+          >
             ← Back to Dashboard
           </Link>
         </header>
+
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label htmlFor="title" style={styles.label}>Catchy Title</label>
+            <label style={styles.label}>Catchy Title</label>
             <input
               type="text"
-              id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
@@ -144,47 +151,49 @@ const Create = () => {
               required
             />
           </div>
+
           <div style={styles.inputGroup}>
-            <label htmlFor="summary" style={styles.label}>Quick Summary</label>
+            <label style={styles.label}>Quick Summary</label>
             <input
               type="text"
-              id="summary"
               name="summary"
               value={formData.summary}
               onChange={handleChange}
               style={styles.input}
-              placeholder="A short, exciting summary of your blog"
+              placeholder="Short summary"
               required
             />
           </div>
+
           <div style={styles.inputGroup}>
-            <label htmlFor="image" style={styles.label}>Cover Image URL</label>
+            <label style={styles.label}>Cover Image URL</label>
             <input
               type="url"
-              id="image"
               name="image"
               value={formData.image}
               onChange={handleChange}
               style={styles.input}
-              placeholder="https://example.com/image.png"
               required
             />
           </div>
+
           <div style={styles.inputGroup}>
-            <label htmlFor="content" style={styles.label}>Your Story</label>
+            <label style={styles.label}>Your Story</label>
             <textarea
-              id="content"
               name="content"
               value={formData.content}
               onChange={handleChange}
-              style={{...styles.input, ...styles.textarea}}
+              style={{ ...styles.input, ...styles.textarea }}
               placeholder="Write your blog content here..."
               required
             ></textarea>
           </div>
-          <button type="submit" disabled={loading} style={styles.button}
-                  onMouseOver={e => e.target.style.opacity = 0.8}
-                  onMouseOut={e => e.target.style.opacity = 1}>
+
+          <button 
+            type="submit"
+            disabled={loading}
+            style={styles.button}
+          >
             {loading ? "Publishing..." : "Publish Post"}
           </button>
         </form>
