@@ -1,13 +1,13 @@
 import express from "express";
-import Blog from "../model/Blog.js";
+import Blog from "../model/blog.js";   // ✅ FIXED (lowercase file name)
 import verifyToken from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ROUTE 1: Naya Blog Post Create Karna (Ab Secure Hai)
+// ROUTE 1: Naya Blog Post Create Karna (Secure)
 router.post("/create", verifyToken, async (req, res) => {
   const { title, summary, image, content } = req.body;
-  const authorId = req.user.userId; // Middleware se user ki ID mili (ye secure hai)
+  const authorId = req.user.userId;
 
   if (!title || !summary || !content || !image) {
     return res.status(400).json({ message: "All fields are required." });
@@ -28,12 +28,12 @@ router.post("/create", verifyToken, async (req, res) => {
   }
 });
 
-// ROUTE 2: Saare Blog Posts Dikhana (Naya Feature)
+// ROUTE 2: Saare Blog Posts Fetch
 router.get("/all", async (req, res) => {
   try {
     const blogs = await Blog.find()
-      .populate("author", ["email"]) // Author ka email bhi saath mein aayega
-      .sort({ createdAt: -1 }); // Naye post sabse upar
+      .populate("author", ["email"])
+      .sort({ createdAt: -1 });
     res.status(200).json(blogs);
   } catch (error) {
     console.error("Error fetching all posts:", error);
@@ -41,7 +41,7 @@ router.get("/all", async (req, res) => {
   }
 });
 
-// ROUTE 3: Ek Blog Post Delete Karna (Ab Secure Hai)
+// ROUTE 3: Delete Blog (Secure)
 router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const authorId = req.user.userId;
@@ -52,7 +52,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Yahan check ho raha hai ki user asli author hai ya nahi
     if (post.author.toString() !== authorId) {
       return res.status(403).json({ message: "Action not allowed. You are not the author." });
     }
@@ -65,34 +64,33 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ROUTE 4: Ek Blog Post Update Karna (Ab Secure Hai)
+// ROUTE 4: Update Blog (Secure)
 router.put("/:id", verifyToken, async (req, res) => {
-    const { id } = req.params;
-    const authorId = req.user.userId;
-    const { title, summary, image, content } = req.body;
+  const { id } = req.params;
+  const authorId = req.user.userId;
+  const { title, summary, image, content } = req.body;
 
-    try {
-        const post = await Blog.findById(id);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-
-        if (post.author.toString() !== authorId) {
-            return res.status(403).json({ message: "Action not allowed. You are not the author." });
-        }
-
-        post.title = title || post.title;
-        post.summary = summary || post.summary;
-        post.image = image || post.image;
-        post.content = content || post.content;
-
-        await post.save();
-        res.status(200).json({ message: "Blog post updated successfully!", post });
-
-    } catch (error) {
-        console.error("Error updating post:", error);
-        res.status(500).json({ message: "Failed to update post" });
+  try {
+    const post = await Blog.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+
+    if (post.author.toString() !== authorId) {
+      return res.status(403).json({ message: "Action not allowed. You are not the author." });
+    }
+
+    post.title = title || post.title;
+    post.summary = summary || post.summary;
+    post.image = image || post.image;
+    post.content = content || post.content;
+
+    await post.save();
+    res.status(200).json({ message: "Blog post updated successfully!", post });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    res.status(500).json({ message: "Failed to update post" });
+  }
 });
 
 export default router;
