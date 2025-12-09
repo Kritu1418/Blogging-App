@@ -2,7 +2,8 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import Usermodel from "../models/User.js";   // ✅ FIXED PATH
+import Usermodel from "../model/user.js";
+
 import { body, validationResult } from "express-validator";
 import verifyToken from "../middleware/authMiddleware.js";
 
