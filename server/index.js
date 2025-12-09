@@ -1,12 +1,12 @@
 // =========================================================
-// ## Final Correct index.js Code ##
+// ## Final Correct index.js for Render Deployment ##
 // =========================================================
 
-// STEP 1: DOTENV ko sabse pehle configure karo
+// STEP 1: dotenv config
 import dotenv from "dotenv";
 dotenv.config();
 
-// STEP 2: Baaki sab kuch import karo
+// STEP 2: Imports
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,28 +14,35 @@ import mongoose from "mongoose";
 import authRoute from "./routes/auth.js";
 import blogRoute from "./routes/data.js";
 
-// App declare karo
+// App init
 const app = express();
 
-// Middlewares use karo
-// ## FINAL FIX YAHAN HAI ## - Ye CORS error ko theek karega
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+// ======================= CORS FIX =========================
+// Render deployment ke liye FRONTEND_URL use karo
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, // ✅ Vercel frontend domain
+    credentials: true,
+  })
+);
+
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes use karo
-app.use('/auth', authRoute);
-app.use('/blog', blogRoute);
+// Routes
+app.use("/auth", authRoute);
+app.use("/blog", blogRoute);
 
-// Variables define karo
+// Env variables
 const PORT = process.env.PORT || 8000;
-const MONGO_URI = process.env.MONGO_URI;
 
-// Database se connect karo aur server start karo
-mongoose.connect(MONGO_URI)
+// IMPORTANT FIX: Render me "MONGODB_URI" set hota hai
+const MONGO_URI = process.env.MONGODB_URI;
+
+// =================== Database + Server ====================
+mongoose
+  .connect(MONGO_URI)
   .then(() => {
     console.log("DB connected successfully! 🎉");
     app.listen(PORT, () => {
